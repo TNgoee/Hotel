@@ -1,0 +1,6 @@
+@KhachSan_HostAddress = http://localhost:5165
+
+GET {{KhachSan_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
