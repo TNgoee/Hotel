@@ -1,15 +1,21 @@
-using KhachSan.Services;
-using Microsoft.AspNetCore.Http.HttpResults;
+using KhachSan.Models;
 using MongoDB.Driver;
 
-namespace KhachSan.Models
+namespace KhachSan.Services
 {
     public class DiscountService : IDiscountService
     {
         private readonly IMongoCollection<Discount> _discount;
-        public DiscountService(MongoDBService mongoDBService)
-        { _discount = mongoDBService.GetCollection<Discount>("Discount"); }
+        private readonly ICloudinaryService _cloudinaryService;  // Thêm ICloudinaryService
 
+        // Constructor nhận ICloudinaryService
+        public DiscountService(MongoDBService mongoDBService, ICloudinaryService cloudinaryService)
+        {
+            _discount = mongoDBService.GetCollection<Discount>("Discount");
+            _cloudinaryService = cloudinaryService;  // Khởi tạo ICloudinaryService
+        }
+
+        // Phương thức tạo mới discount
         public async Task CreateDiscount(Discount discount, IFormFile imageFile)
         {
             if (discount == null || imageFile == null)
@@ -21,13 +27,12 @@ namespace KhachSan.Models
             await imageFile.CopyToAsync(memoryStream);
             memoryStream.Seek(0, SeekOrigin.Begin);
 
-            var dropboxService = new DropboxService();
-            discount.Img = await dropboxService.UploadFileAsync(memoryStream, imageFile.FileName);
+            // Upload ảnh lên Cloudinary thay vì Dropbox
+            discount.Img = await _cloudinaryService.UploadFileAsync(memoryStream, imageFile.FileName);
 
             discount.Id = null;
             await _discount.InsertOneAsync(discount);
         }
-
 
         public async Task<bool> DeleteDiscount(string id)
         {

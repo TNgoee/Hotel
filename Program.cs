@@ -19,6 +19,7 @@ builder.Services.AddSingleton<IRoleService, RoleService>();
 builder.Services.AddSingleton<ICustomDiscountService, CustomerDiscountService>();
 builder.Services.AddSingleton<IReviewRoomService, ReviewRoomService>();
 builder.Services.AddSingleton<IReviewServiceService, ReviewServiceService>();
+builder.Services.AddSingleton<ICloudinaryService, CloudinaryService>();
 
 builder.Services.AddSingleton<DropboxService>();
 

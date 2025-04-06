@@ -81,3 +81,5 @@ D:\Projects\KhachSan\bin\Debug\net8.0\Newtonsoft.Json.dll
 D:\Projects\KhachSan\bin\Debug\net8.0\webqlkhachsan\package-lock.json
 D:\Projects\KhachSan\bin\Debug\net8.0\webqlkhachsan\package.json
 D:\Projects\KhachSan\bin\Debug\net8.0\webqlkhachsan\tsconfig.json
+D:\Projects\KhachSan\bin\Debug\net8.0\CloudinaryDotNet.dll
+D:\Projects\KhachSan\obj\Debug\net8.0\KhachSan.sourcelink.json

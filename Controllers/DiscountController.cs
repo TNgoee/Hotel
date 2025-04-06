@@ -1,5 +1,3 @@
-
-using Dropbox.Api;
 using KhachSan.Models;
 using KhachSan.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -10,12 +8,12 @@ namespace KhachSan.Controllers;
 public class DiscountController : ControllerBase
 {
     private readonly IDiscountService _discountService;
-    private readonly DropboxService _dropboxService;
+    private readonly ICloudinaryService _cloudinaryService;  // Thay DropboxService bằng ICloudinaryService
 
-    public DiscountController(IDiscountService discountService, DropboxService dropboxService)
+    public DiscountController(IDiscountService discountService, ICloudinaryService cloudinaryService)
     {
         _discountService = discountService;
-        _dropboxService = dropboxService;
+        _cloudinaryService = cloudinaryService;  // Sử dụng ICloudinaryService
     }
 
     [HttpGet]
@@ -25,6 +23,7 @@ public class DiscountController : ControllerBase
         var discount = await _discountService.GetAllDiscount();
         return Ok(discount);
     }
+
     [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<Discount>> GetById(string id)
@@ -41,15 +40,14 @@ public class DiscountController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult> Post([FromForm] DiscountCreateDto discountCreateDto, IFormFile imageFile)
     {
-
-
         if (discountCreateDto == null || imageFile == null)
         {
             return BadRequest("Invalid data");
         }
 
-        string imageUrl = await _dropboxService.UploadFileAsync(imageFile.OpenReadStream(), imageFile.FileName);
-        Console.WriteLine($"🔹 Uploaded file: {imageUrl}");
+        // Upload ảnh lên Cloudinary thay vì Dropbox
+        string imageUrl = await _cloudinaryService.UploadFileAsync(imageFile.OpenReadStream(), imageFile.FileName);
+        Console.WriteLine($"🔹 Uploaded file to Cloudinary: {imageUrl}");
 
         var discount = new Discount
         {
@@ -67,6 +65,7 @@ public class DiscountController : ControllerBase
 
         return CreatedAtAction(nameof(Get), new { discount });
     }
+
     [HttpPatch("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -85,7 +84,6 @@ public class DiscountController : ControllerBase
         if (discountUpdateDto.MinAmount.HasValue)
             discount.MinAmount = discountUpdateDto.MinAmount.Value;
 
-
         if (discountUpdateDto.MaxQuantity.HasValue)
             discount.MaxQuantity = discountUpdateDto.MaxQuantity.Value;
 
@@ -100,21 +98,19 @@ public class DiscountController : ControllerBase
         {
             try
             {
+                // Xóa ảnh cũ nếu có
                 if (!string.IsNullOrEmpty(discount.Img))
                 {
-                    string dropboxPath = await _dropboxService.GetDropboxPathFromUrl(discount.Img);
-                    if (!string.IsNullOrEmpty(dropboxPath))
-                    {
-                        await _dropboxService.DeleteFileAsync(dropboxPath);
-                    }
+                    await _cloudinaryService.DeleteFileAsync(discount.Img); // Xóa ảnh cũ từ Cloudinary
                 }
 
-                string newImageUrl = await _dropboxService.UploadFileAsync(imageFile.OpenReadStream(), imageFile.FileName);
+                // Upload ảnh mới lên Cloudinary
+                string newImageUrl = await _cloudinaryService.UploadFileAsync(imageFile.OpenReadStream(), imageFile.FileName);
                 discount.Img = newImageUrl;
             }
             catch (Exception ex)
             {
-                return BadRequest($"Failed to update image on Dropbox: {ex.Message}");
+                return BadRequest($"Failed to update image on Cloudinary: {ex.Message}");
             }
         }
 
@@ -137,27 +133,16 @@ public class DiscountController : ControllerBase
         {
             try
             {
-
-                string dropboxPath = await _dropboxService.GetDropboxPathFromUrl(discount.Img);
-
-
-                if (!string.IsNullOrEmpty(dropboxPath))
-                {
-                    await _dropboxService.DeleteFileAsync(dropboxPath);
-                }
-                else
-                {
-                    return BadRequest("Failed to retrieve Dropbox path from URL.");
-                }
+                // Xóa ảnh từ Cloudinary nếu có
+                await _cloudinaryService.DeleteFileAsync(discount.Img);
             }
             catch (Exception ex)
             {
-                return BadRequest($"Failed to delete image from Dropbox: {ex.Message}");
+                return BadRequest($"Failed to delete image from Cloudinary: {ex.Message}");
             }
         }
 
         await _discountService.DeleteDiscount(id);
         return Ok("Discount deleted successfully");
     }
-
 }
