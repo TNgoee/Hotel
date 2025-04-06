@@ -8,12 +8,14 @@ namespace KhachSan.Controllers;
 public class CustomerController : ControllerBase
 {
     private readonly ICustomerService _customerService;
+    private readonly IAccountService _accountService;
     private readonly DropboxService _dropboxService;
 
-    public CustomerController(ICustomerService customerService, DropboxService dropboxService)
+    public CustomerController(ICustomerService customerService, DropboxService dropboxService, IAccountService accountService)
     {
         _customerService = customerService;
         _dropboxService = dropboxService;
+        _accountService = accountService;
     }
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -43,6 +45,14 @@ public class CustomerController : ControllerBase
             return BadRequest("Invalid data");
         }
 
+        // Kiểm tra xem tài khoản có tồn tại không
+        var account = await _accountService.GetAccountById(customerCreateDto.AccountId);
+        if (account == null)
+        {
+            return BadRequest("Account does not exist");
+        }
+
+        // Upload ảnh và lấy URL
         string imageUrl = await _dropboxService.UploadFileToAvatarAsync(imageFile.OpenReadStream(), imageFile.FileName);
 
         var customer = new Customer
@@ -53,10 +63,16 @@ public class CustomerController : ControllerBase
             Avatar = imageUrl
         };
 
-        await _customerService.CreateCustomer(customer, imageFile);
+        // Gán tài khoản vào Customer
+        customer.Account = account;
 
-        return CreatedAtAction(nameof(Get), new { customer });
+        // Tạo khách hàng mới và truyền imageFile vào đây
+        await _customerService.CreateCustomer(customer, imageFile);  // Truyền imageFile vào đây
+
+        return CreatedAtAction(nameof(Get), new { id = customer.Id }, customer);
     }
+
+
     [HttpPatch("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

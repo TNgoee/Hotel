@@ -46,10 +46,10 @@ namespace KhachSan.Models
             // Lấy danh sách tất cả khách hàng
             var customers = await _customer.Find(_ => true).ToListAsync();
 
-            // Tạo danh sách các task để lấy thông tin tài khoản cho từng khách hàng
+
             var accountTasks = customers.Select(async customer =>
             {
-                var account = await _accountService.GetAccountById(customer.AccountId);  // Sử dụng IAccountService
+                var account = await _accountService.GetAccountById(customer.AccountId);
                 if (account != null)
                 {
                     customer.Account = account;

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("KhachSan")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a5e7e4ce34a0a791be770c34ed7a730d667cd1ad")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+960125f6f12231c49a421e66f22f22fc04a0386d")]
 [assembly: System.Reflection.AssemblyProductAttribute("KhachSan")]
 [assembly: System.Reflection.AssemblyTitleAttribute("KhachSan")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
